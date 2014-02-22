@@ -42,6 +42,8 @@
 - (void) animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(float)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
 - (void) animateWithImages:(NSArray *)images transitionDuration:(float)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
 - (void) stopAnimation;
+- (void) clear;
+
 @end
 
 

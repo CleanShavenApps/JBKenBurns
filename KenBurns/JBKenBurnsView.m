@@ -105,6 +105,25 @@ enum JBSourceMode {
     [_nextImageTimer fire];
 }
 
+- (void)clear {
+    
+    [_nextImageTimer invalidate];
+    _nextImageTimer = nil;
+    
+    // Remove the previous view
+    if ([[self subviews] count] > 0){
+        UIView *oldImageView = [[self subviews] objectAtIndex:0];
+        [oldImageView removeFromSuperview];
+        oldImageView = nil;
+    }
+    
+    _imagesArray = nil;
+    _showImageDuration = 0;
+    _shouldLoop = NO;
+    _isLandscape = NO;
+    _currentIndex = -1;
+}
+
 - (void)nextImage {
     _currentIndex++;
 
