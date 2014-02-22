@@ -28,6 +28,27 @@
 
 @class JBKenBurnsView;
 
+#pragma - KenBurnsViewDatasource 
+@protocol JBKenBurnsViewDatasource <NSObject>
+
+/**
+ * Tells the data source to return number of images to show
+ * in \c kenBurnsView. (required)
+ *
+ * @param kenBurnsView The JBKenBurnsView requesting this information
+ */
+- (NSInteger)numberOfImagesInKenBurnsView:(JBKenBurnsView*)kenBurnsView;
+
+/**
+ * Asks the data source for a UIImage for display
+ * in \c kenBurnsView. (required)
+ *
+ * @param kenBurnsView The JBKenBurnsView requesting this information
+ * @param imageIndex Index of the UIImage being requested
+ */
+- (UIImage*)kenBurnsView:(JBKenBurnsView*)kenBurnsView imageAtIndex:(NSInteger)imageIndex;
+@end
+
 #pragma - KenBurnsViewDelegate
 @protocol JBKenBurnsViewDelegate <NSObject>
 @optional
@@ -38,10 +59,23 @@
 @interface JBKenBurnsView : UIView
 
 @property (unsafe_unretained) id<JBKenBurnsViewDelegate> delegate;
+@property (unsafe_unretained) id<JBKenBurnsViewDatasource> datasource;
 
 - (void) animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(float)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
 - (void) animateWithImages:(NSArray *)images transitionDuration:(float)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
+
+/**
+ * Starts animation. Images are requested from datasource
+ *
+ */
+- (void) startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource transitionDuration:(float)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
+
 - (void) stopAnimation;
+
+/**
+ * Clear images and animation from the view
+ *
+ */
 - (void) clear;
 
 @end

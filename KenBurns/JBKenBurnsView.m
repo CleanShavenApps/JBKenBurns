@@ -31,7 +31,8 @@
 enum JBSourceMode {
     JBSourceModeImages,
 //    JBSourceModeURLs,
-    JBSourceModePaths
+    JBSourceModePaths,
+    JBSourceModeDatasource
 };
 
 // Private interface
@@ -84,6 +85,13 @@ enum JBSourceMode {
     [self _startAnimationsWithData:images transitionDuration:duration loop:shouldLoop isLandscape:isLandscape];
 }
 
+- (void) startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource transitionDuration:(float)duration loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape
+{
+    _sourceMode = JBSourceModeDatasource;
+    _datasource = datasource;
+    [self _startAnimationsWithData:nil transitionDuration:duration loop:isLoop isLandscape:isLandscape];
+}
+
 - (void)stopAnimation {
     if (_nextImageTimer && [_nextImageTimer isValid]) {
         [_nextImageTimer invalidate];
@@ -107,8 +115,7 @@ enum JBSourceMode {
 
 - (void)clear {
     
-    [_nextImageTimer invalidate];
-    _nextImageTimer = nil;
+    [self stopAnimation];
     
     // Remove the previous view
     if ([[self subviews] count] > 0){
@@ -127,14 +134,22 @@ enum JBSourceMode {
 - (void)nextImage {
     _currentIndex++;
 
+    NSInteger imageArrayCount = 0;
     UIImage *image = nil;
     switch (_sourceMode) {
         case JBSourceModeImages:
+            imageArrayCount = _imagesArray.count;
             image = _imagesArray[_currentIndex];
             break;
 
         case JBSourceModePaths:
+            imageArrayCount = _imagesArray.count;
             image = [UIImage imageWithContentsOfFile:_imagesArray[_currentIndex]];
+            break;
+            
+        case JBSourceModeDatasource:
+            imageArrayCount = [_datasource numberOfImagesInKenBurnsView:self];
+            image = [_datasource kenBurnsView:self imageAtIndex:_currentIndex];
             break;
     }
 
@@ -301,7 +316,7 @@ enum JBSourceMode {
 
     [self _notifyDelegate];
 
-    if (_currentIndex == _imagesArray.count - 1) {
+    if (_currentIndex == imageArrayCount - 1) {
         if (_shouldLoop) {
             _currentIndex = -1;
         }else {
