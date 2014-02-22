@@ -141,8 +141,7 @@ enum JBSourceMode {
         
         // restart timer
         CGFloat durationLeft = self.showImageDuration - time_since_pause;
-        
-        NSLog(@"%f %f", durationLeft, time_since_pause);
+
         self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:durationLeft target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
     }
 }
