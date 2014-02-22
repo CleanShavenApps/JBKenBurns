@@ -71,8 +71,8 @@
 @property (weak, nonatomic) id<JBKenBurnsViewDelegate> delegate;
 @property (weak, nonatomic) id<JBKenBurnsViewDatasource> datasource;
 
-- (void) animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(CGFloat)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
-- (void) animateWithImages:(NSArray *)images transitionDuration:(CGFloat)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
+- (void)animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(CGFloat)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
+- (void)animateWithImages:(NSArray *)images transitionDuration:(CGFloat)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
 
 /**
  * Starts animation. Images are requested from \c datasource
@@ -81,15 +81,15 @@
  * @param isLoop The animation will start again when ended.
  * @param isLandscape If true optimized to show in Landscape mode.
  */
-- (void) startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
+- (void)startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
 
-- (void) stopAnimation;
+- (void)stopAnimation;
 
 /**
  * Clear images and animation from the view
  *
  */
-- (void) clear;
+- (void)clear;
 
 @end
 

@@ -36,17 +36,15 @@ enum JBSourceMode {
 };
 
 // Private interface
-@interface JBKenBurnsView (){
-    NSMutableArray *_imagesArray;
-    CGFloat _showImageDuration;
-    NSInteger _currentIndex;
-    BOOL _shouldLoop;
-    BOOL _isLandscape;
+@interface JBKenBurnsView ()
 
-    NSTimer *_nextImageTimer;
-    enum JBSourceMode _sourceMode;
-}
-
+@property (strong, nonatomic) NSMutableArray *imagesArray;
+@property (assign, nonatomic) CGFloat showImageDuration;
+@property (assign, nonatomic) NSInteger currentIndex;
+@property (assign, nonatomic) BOOL shouldLoop;
+@property (assign, nonatomic) BOOL isLandscape;
+@property (assign, nonatomic) NSTimer *nextImageTimer;
+@property (assign, nonatomic) enum JBSourceMode sourceMode;
 @property (nonatomic) int currentImage;
 
 @end
@@ -74,51 +72,51 @@ enum JBSourceMode {
     self.layer.masksToBounds = YES;
 }
 
-- (void) animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(CGFloat)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape
+- (void)animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(CGFloat)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape
 {
-    _sourceMode = JBSourceModePaths;
+    self.sourceMode = JBSourceModePaths;
     [self _startAnimationsWithData:imagePaths transitionDuration:duration loop:shouldLoop isLandscape:isLandscape];
 }
 
-- (void) animateWithImages:(NSArray *)images transitionDuration:(CGFloat)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape {
-    _sourceMode = JBSourceModeImages;
+- (void)animateWithImages:(NSArray *)images transitionDuration:(CGFloat)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape {
+    self.sourceMode = JBSourceModeImages;
     [self _startAnimationsWithData:images transitionDuration:duration loop:shouldLoop isLandscape:isLandscape];
 }
 
-- (void) startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape
+- (void)startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape
 {
-    _sourceMode = JBSourceModeDatasource;
+    self.sourceMode = JBSourceModeDatasource;
     self.datasource = datasource;
     
     // start at 0
-    _currentIndex       = -1;
+    self.currentIndex       = -1;
    
-    _showImageDuration  = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:_currentIndex+1];
-    _shouldLoop         = isLoop;
-    _isLandscape        = isLandscape;
+    self.showImageDuration  = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:self.currentIndex+1];
+    self.shouldLoop         = isLoop;
+    self.isLandscape        = isLandscape;
 
     [self nextImage];
 }
 
 - (void)stopAnimation {
-    if (_nextImageTimer && [_nextImageTimer isValid]) {
-        [_nextImageTimer invalidate];
-        _nextImageTimer = nil;
+    if (self.nextImageTimer && [self.nextImageTimer isValid]) {
+        [self.nextImageTimer invalidate];
+        self.nextImageTimer = nil;
     }
 }
 
 - (void)_startAnimationsWithData:(NSArray *)data transitionDuration:(CGFloat)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape
 {
-    _imagesArray        = [data mutableCopy];
-    _showImageDuration  = duration;
-    _shouldLoop         = shouldLoop;
-    _isLandscape        = isLandscape;
+    self.imagesArray        = [data mutableCopy];
+    self.showImageDuration  = duration;
+    self.shouldLoop         = shouldLoop;
+    self.isLandscape        = isLandscape;
 
     // start at 0
-    _currentIndex       = -1;
+    self.currentIndex       = -1;
 
-    _nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:duration target:self selector:@selector(nextImage) userInfo:nil repeats:YES];
-    [_nextImageTimer fire];
+    self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:duration target:self selector:@selector(nextImage) userInfo:nil repeats:YES];
+    [self.nextImageTimer fire];
 }
 
 - (void)clear {
@@ -132,38 +130,38 @@ enum JBSourceMode {
         oldImageView = nil;
     }
     
-    _imagesArray = nil;
-    _showImageDuration = 0;
-    _shouldLoop = NO;
-    _isLandscape = NO;
-    _currentIndex = -1;
+    self.imagesArray = nil;
+    self.showImageDuration = 0;
+    self.shouldLoop = NO;
+    self.isLandscape = NO;
+    self.currentIndex = -1;
 }
 
 - (void)nextImage {
-    _currentIndex++;
+    self.currentIndex++;
     
-    CGFloat imageDurationForCurrentIndex = _showImageDuration;
+    CGFloat imageDurationForCurrentIndex = self.showImageDuration;
 
     NSInteger imageArrayCount = 0;
     UIImage *image = nil;
-    switch (_sourceMode) {
+    switch (self.sourceMode) {
         case JBSourceModeImages:
-            imageArrayCount = _imagesArray.count;
-            image = _imagesArray[_currentIndex];
+            imageArrayCount = self.imagesArray.count;
+            image = self.imagesArray[self.currentIndex];
             break;
 
         case JBSourceModePaths:
-            imageArrayCount = _imagesArray.count;
-            image = [UIImage imageWithContentsOfFile:_imagesArray[_currentIndex]];
+            imageArrayCount = self.imagesArray.count;
+            image = [UIImage imageWithContentsOfFile:self.imagesArray[self.currentIndex]];
             break;
             
         case JBSourceModeDatasource:
             imageArrayCount = [self.datasource numberOfImagesInKenBurnsView:self];
-            image = [self.datasource kenBurnsView:self imageAtIndex:_currentIndex];
-            imageDurationForCurrentIndex = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:_currentIndex];
+            image = [self.datasource kenBurnsView:self imageAtIndex:self.currentIndex];
+            imageDurationForCurrentIndex = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:self.currentIndex];
             
-            [_nextImageTimer invalidate];
-            _nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:imageDurationForCurrentIndex target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
+            [self.nextImageTimer invalidate];
+            self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:imageDurationForCurrentIndex target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
             
             break;
     }
@@ -179,8 +177,8 @@ enum JBSourceMode {
     CGFloat zoomInY       = -1;
     CGFloat moveX         = -1;
     CGFloat moveY         = -1;
-    CGFloat frameWidth    = _isLandscape ? self.bounds.size.width: self.bounds.size.height;
-    CGFloat frameHeight   = _isLandscape ? self.bounds.size.height: self.bounds.size.width;
+    CGFloat frameWidth    = self.isLandscape ? self.bounds.size.width: self.bounds.size.height;
+    CGFloat frameHeight   = self.isLandscape ? self.bounds.size.height: self.bounds.size.width;
     
     // Wider than screen 
     if (image.size.width > frameWidth)
@@ -331,25 +329,25 @@ enum JBSourceMode {
 
     [self _notifyDelegate];
 
-    if (_currentIndex == imageArrayCount - 1) {
-        if (_shouldLoop) {
-            _currentIndex = -1;
+    if (self.currentIndex == imageArrayCount - 1) {
+        if (self.shouldLoop) {
+            self.currentIndex = -1;
         }else {
-            [_nextImageTimer invalidate];
+            [self.nextImageTimer invalidate];
         }
     }
 }
 
-- (void) _notifyDelegate
+- (void)_notifyDelegate
 {
-    if (_delegate) {
-        if([_delegate respondsToSelector:@selector(didShowImageAtIndex:)])
+    if (self.delegate) {
+        if([self.delegate respondsToSelector:@selector(didShowImageAtIndex:)])
         {
-            [_delegate didShowImageAtIndex:_currentIndex];
+            [self.delegate didShowImageAtIndex:self.currentIndex];
         }      
         
-        if (_currentIndex == ([_imagesArray count] - 1) && !_shouldLoop && [_delegate respondsToSelector:@selector(didFinishAllAnimations)]) {
-            [_delegate didFinishAllAnimations];
+        if (self.currentIndex == ([self.imagesArray count] - 1) && !self.shouldLoop && [self.delegate respondsToSelector:@selector(didFinishAllAnimations)]) {
+            [self.delegate didFinishAllAnimations];
         } 
     }
     
