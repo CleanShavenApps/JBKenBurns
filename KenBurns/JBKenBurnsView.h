@@ -47,6 +47,16 @@
  * @param imageIndex Index of the UIImage being requested
  */
 - (UIImage*)kenBurnsView:(JBKenBurnsView*)kenBurnsView imageAtIndex:(NSInteger)imageIndex;
+
+/**
+ * Asks the data source for duration to animate an image
+ * in \c kenBurnsView. (required)
+ *
+ * @param kenBurnsView The JBKenBurnsView requesting this information
+ * @param imageIndex Index of the UIImage being requested
+ */
+- (CGFloat)kenBurnsView:(JBKenBurnsView*)kenBurnsView transitionDurationForImageAtIndex:(NSInteger)imageIndex;
+
 @end
 
 #pragma - KenBurnsViewDelegate
@@ -58,17 +68,20 @@
 
 @interface JBKenBurnsView : UIView
 
-@property (unsafe_unretained) id<JBKenBurnsViewDelegate> delegate;
-@property (unsafe_unretained) id<JBKenBurnsViewDatasource> datasource;
+@property (weak, nonatomic) id<JBKenBurnsViewDelegate> delegate;
+@property (weak, nonatomic) id<JBKenBurnsViewDatasource> datasource;
 
-- (void) animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(float)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
-- (void) animateWithImages:(NSArray *)images transitionDuration:(float)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
+- (void) animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(CGFloat)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
+- (void) animateWithImages:(NSArray *)images transitionDuration:(CGFloat)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
 
 /**
- * Starts animation. Images are requested from datasource
+ * Starts animation. Images are requested from \c datasource
  *
+ * @param datasource A protocol to request for images
+ * @param isLoop The animation will start again when ended.
+ * @param isLandscape If true optimized to show in Landscape mode.
  */
-- (void) startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource transitionDuration:(float)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
+- (void) startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
 
 - (void) stopAnimation;
 

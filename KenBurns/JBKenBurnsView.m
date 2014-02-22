@@ -74,22 +74,30 @@ enum JBSourceMode {
     self.layer.masksToBounds = YES;
 }
 
-- (void) animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(float)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape
+- (void) animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(CGFloat)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape
 {
     _sourceMode = JBSourceModePaths;
     [self _startAnimationsWithData:imagePaths transitionDuration:duration loop:shouldLoop isLandscape:isLandscape];
 }
 
-- (void) animateWithImages:(NSArray *)images transitionDuration:(float)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape {
+- (void) animateWithImages:(NSArray *)images transitionDuration:(CGFloat)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape {
     _sourceMode = JBSourceModeImages;
     [self _startAnimationsWithData:images transitionDuration:duration loop:shouldLoop isLandscape:isLandscape];
 }
 
-- (void) startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource transitionDuration:(float)duration loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape
+- (void) startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape
 {
     _sourceMode = JBSourceModeDatasource;
-    _datasource = datasource;
-    [self _startAnimationsWithData:nil transitionDuration:duration loop:isLoop isLandscape:isLandscape];
+    self.datasource = datasource;
+    
+    // start at 0
+    _currentIndex       = -1;
+   
+    _showImageDuration  = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:_currentIndex+1];
+    _shouldLoop         = isLoop;
+    _isLandscape        = isLandscape;
+
+    [self nextImage];
 }
 
 - (void)stopAnimation {
@@ -99,7 +107,7 @@ enum JBSourceMode {
     }
 }
 
-- (void)_startAnimationsWithData:(NSArray *)data transitionDuration:(float)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape
+- (void)_startAnimationsWithData:(NSArray *)data transitionDuration:(CGFloat)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape
 {
     _imagesArray        = [data mutableCopy];
     _showImageDuration  = duration;
@@ -133,6 +141,8 @@ enum JBSourceMode {
 
 - (void)nextImage {
     _currentIndex++;
+    
+    CGFloat imageDurationForCurrentIndex = _showImageDuration;
 
     NSInteger imageArrayCount = 0;
     UIImage *image = nil;
@@ -148,24 +158,29 @@ enum JBSourceMode {
             break;
             
         case JBSourceModeDatasource:
-            imageArrayCount = [_datasource numberOfImagesInKenBurnsView:self];
-            image = [_datasource kenBurnsView:self imageAtIndex:_currentIndex];
+            imageArrayCount = [self.datasource numberOfImagesInKenBurnsView:self];
+            image = [self.datasource kenBurnsView:self imageAtIndex:_currentIndex];
+            imageDurationForCurrentIndex = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:_currentIndex];
+            
+            [_nextImageTimer invalidate];
+            _nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:imageDurationForCurrentIndex target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
+            
             break;
     }
 
     UIImageView *imageView = nil;
     
-    float resizeRatio   = -1;
-    float widthDiff     = -1;
-    float heightDiff    = -1;
-    float originX       = -1;
-    float originY       = -1;
-    float zoomInX       = -1;
-    float zoomInY       = -1;
-    float moveX         = -1;
-    float moveY         = -1;
-    float frameWidth    = _isLandscape ? self.bounds.size.width: self.bounds.size.height;
-    float frameHeight   = _isLandscape ? self.bounds.size.height: self.bounds.size.width;
+    CGFloat resizeRatio   = -1;
+    CGFloat widthDiff     = -1;
+    CGFloat heightDiff    = -1;
+    CGFloat originX       = -1;
+    CGFloat originY       = -1;
+    CGFloat zoomInX       = -1;
+    CGFloat zoomInY       = -1;
+    CGFloat moveX         = -1;
+    CGFloat moveY         = -1;
+    CGFloat frameWidth    = _isLandscape ? self.bounds.size.width: self.bounds.size.height;
+    CGFloat frameHeight   = _isLandscape ? self.bounds.size.height: self.bounds.size.width;
     
     // Wider than screen 
     if (image.size.width > frameWidth)
@@ -224,16 +239,16 @@ enum JBSourceMode {
     }
     
     // Resize the image.
-    float optimusWidth  = (image.size.width * resizeRatio) * enlargeRatio;
-    float optimusHeight = (image.size.height * resizeRatio) * enlargeRatio;
+    CGFloat optimusWidth  = (image.size.width * resizeRatio) * enlargeRatio;
+    CGFloat optimusHeight = (image.size.height * resizeRatio) * enlargeRatio;
     imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, optimusWidth, optimusHeight)];
     imageView.backgroundColor = [UIColor blackColor];
     
     // Calcule the maximum move allowed.
-    float maxMoveX = optimusWidth - frameWidth;
-    float maxMoveY = optimusHeight - frameHeight;
+    CGFloat maxMoveX = optimusWidth - frameWidth;
+    CGFloat maxMoveY = optimusHeight - frameHeight;
     
-    float rotation = (arc4random() % 9) / 100;
+    CGFloat rotation = (arc4random() % 9) / 100;
     
     switch (arc4random() % 4) {
         case 0:
@@ -277,8 +292,8 @@ enum JBSourceMode {
             break;
     }
     
-    NSLog(@"W: IW:%f OW:%f FW:%f MX:%f",image.size.width, optimusWidth, frameWidth, maxMoveX);
-    NSLog(@"H: IH:%f OH:%f FH:%f MY:%f\n",image.size.height, optimusHeight, frameHeight, maxMoveY);
+//    NSLog(@"W: IW:%f OW:%f FW:%f MX:%f",image.size.width, optimusWidth, frameWidth, maxMoveX);
+//    NSLog(@"H: IH:%f OH:%f FH:%f MY:%f\n",image.size.height, optimusHeight, frameHeight, maxMoveY);
     
     CALayer *picLayer    = [CALayer layer];
     picLayer.contents    = (id)image.CGImage;
@@ -304,7 +319,7 @@ enum JBSourceMode {
     
     // Generates the animation
     [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:_showImageDuration + 2];
+    [UIView setAnimationDuration:imageDurationForCurrentIndex + 2];
     [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
     CGAffineTransform rotate    = CGAffineTransformMakeRotation(rotation);
     CGAffineTransform moveRight = CGAffineTransformMakeTranslation(moveX, moveY);
