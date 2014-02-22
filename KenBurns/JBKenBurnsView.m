@@ -105,6 +105,48 @@ enum JBSourceMode {
     }
 }
 
+- (void)pauseAnimation {
+
+    _paused = YES;
+    
+    // stop timer
+    [self stopAnimation];
+    
+    // Find the current view
+    if ([[self subviews] count] > 0){
+        UIView *imageView = [[self subviews] objectAtIndex:0];
+
+        CALayer *layer = imageView.layer;
+        CFTimeInterval paused_time = [layer convertTime:CACurrentMediaTime() fromLayer:nil];
+        layer.speed = 0.0f;
+        layer.timeOffset = paused_time;
+    }
+}
+
+- (void)resumeAnimation {
+    
+    _paused = NO;
+    
+    // Find the current view
+    if ([[self subviews] count] > 0){
+        UIView *imageView = [[self subviews] objectAtIndex:0];
+        
+        CALayer *layer = imageView.layer;
+        CFTimeInterval paused_time = [layer timeOffset];
+        layer.speed = 1.0f;
+        layer.timeOffset = 0.0f;
+        layer.beginTime = 0.0f;
+        CFTimeInterval time_since_pause = [layer convertTime:CACurrentMediaTime() fromLayer:nil] - paused_time;
+        layer.beginTime = time_since_pause;
+        
+        // restart timer
+        CGFloat durationLeft = self.showImageDuration - time_since_pause;
+        
+        NSLog(@"%f %f", durationLeft, time_since_pause);
+        self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:durationLeft target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
+    }
+}
+
 - (void)_startAnimationsWithData:(NSArray *)data transitionDuration:(CGFloat)duration loop:(BOOL)shouldLoop isLandscape:(BOOL)isLandscape
 {
     self.imagesArray        = [data mutableCopy];
@@ -316,16 +358,21 @@ enum JBSourceMode {
     [self addSubview:imageView];
     
     // Generates the animation
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationDuration:imageDurationForCurrentIndex + 2];
-    [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
-    CGAffineTransform rotate    = CGAffineTransformMakeRotation(rotation);
-    CGAffineTransform moveRight = CGAffineTransformMakeTranslation(moveX, moveY);
-    CGAffineTransform combo1    = CGAffineTransformConcat(rotate, moveRight);
-    CGAffineTransform zoomIn    = CGAffineTransformMakeScale(zoomInX, zoomInY);
-    CGAffineTransform transform = CGAffineTransformConcat(zoomIn, combo1);
-    imageView.transform = transform;
-    [UIView commitAnimations];
+    [UIView animateWithDuration:imageDurationForCurrentIndex + 2.0f
+                          delay:0.0f
+                        options:UIViewAnimationOptionCurveEaseInOut
+                     animations:^
+    {
+        CGAffineTransform rotate    = CGAffineTransformMakeRotation(rotation);
+        CGAffineTransform moveRight = CGAffineTransformMakeTranslation(moveX, moveY);
+        CGAffineTransform combo1    = CGAffineTransformConcat(rotate, moveRight);
+        CGAffineTransform zoomIn    = CGAffineTransformMakeScale(zoomInX, zoomInY);
+        CGAffineTransform transform = CGAffineTransformConcat(zoomIn, combo1);
+        imageView.transform = transform;
+        
+    } completion:^(BOOL finished) {
+        
+    }];
 
     [self _notifyDelegate];
 

@@ -70,6 +70,7 @@
 
 @property (weak, nonatomic) id<JBKenBurnsViewDelegate> delegate;
 @property (weak, nonatomic) id<JBKenBurnsViewDatasource> datasource;
+@property (assign, readonly, nonatomic, getter = isPaused) BOOL paused;
 
 - (void)animateWithImagePaths:(NSArray *)imagePaths transitionDuration:(CGFloat)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
 - (void)animateWithImages:(NSArray *)images transitionDuration:(CGFloat)time loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
@@ -84,6 +85,10 @@
 - (void)startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
 
 - (void)stopAnimation;
+
+- (void)pauseAnimation;
+
+- (void)resumeAnimation;
 
 /**
  * Clear images and animation from the view
