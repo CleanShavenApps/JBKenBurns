@@ -197,9 +197,14 @@ enum JBSourceMode {
             break;
             
         case JBSourceModeDatasource:
+            
+            NSAssert(self.datasource, @"Datasource for JBKenBurnsView cannot be nil");
+            
             imageArrayCount = [self.datasource numberOfImagesInKenBurnsView:self];
             image = [self.datasource kenBurnsView:self imageAtIndex:self.currentIndex];
             imageDurationForCurrentIndex = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:self.currentIndex];
+            
+            NSAssert(image, @"Image requested for JBKenBurnsView cannot be nil");
             
             [self.nextImageTimer invalidate];
             self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:imageDurationForCurrentIndex target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
