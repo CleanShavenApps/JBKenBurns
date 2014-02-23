@@ -432,7 +432,7 @@ enum JBSourceMode {
             [self.delegate didShowImageAtIndex:self.currentIndex];
         }      
         
-        if (self.currentIndex == ([self.imagesArray count] - 1) && !self.shouldLoop && [self.delegate respondsToSelector:@selector(didFinishAllAnimations)]) {
+        if (self.currentIndex == ((long) [self.imagesArray count] - 1) && !self.shouldLoop && [self.delegate respondsToSelector:@selector(didFinishAllAnimations)]) {
             [self.delegate didFinishAllAnimations];
         } 
     }

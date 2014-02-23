@@ -28,7 +28,8 @@
 
 @class JBKenBurnsView;
 
-#pragma - KenBurnsViewDatasource 
+#pragma mark - KenBurnsViewDatasource 
+
 @protocol JBKenBurnsViewDatasource <NSObject>
 
 /**
@@ -59,7 +60,8 @@
 
 @end
 
-#pragma - KenBurnsViewDelegate
+#pragma mark - KenBurnsViewDelegate
+
 @protocol JBKenBurnsViewDelegate <NSObject>
 @optional
 - (void)didShowImageAtIndex:(NSUInteger)index;
