@@ -47,6 +47,8 @@ enum JBSourceMode {
 @property (assign, nonatomic) enum JBSourceMode sourceMode;
 @property (nonatomic) int currentImage;
 
+@property (assign, nonatomic) BOOL startImmediatelyWithoutFadeIn;
+
 @end
 
 
@@ -94,6 +96,7 @@ enum JBSourceMode {
     self.showImageDuration  = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:self.currentIndex+1];
     self.shouldLoop         = isLoop;
     self.isLandscape        = isLandscape;
+    self.startImmediatelyWithoutFadeIn  = YES;
 
     [self nextImage];
 }
@@ -347,8 +350,14 @@ enum JBSourceMode {
     
     [imageView.layer addSublayer:picLayer];
     
+    CFTimeInterval fadeDuration = 1.0f;
+    if (self.startImmediatelyWithoutFadeIn)
+    {
+        fadeDuration = 0.0001f;
+        self.startImmediatelyWithoutFadeIn = NO;
+    }
     CATransition *animation = [CATransition animation];
-    [animation setDuration:1];
+    [animation setDuration:fadeDuration];
     [animation setType:kCATransitionFade];
     [[self layer] addAnimation:animation forKey:nil];
     
