@@ -45,7 +45,7 @@ enum JBSourceMode {
 @property (assign, nonatomic) BOOL isLandscape;
 @property (assign, nonatomic) NSTimer *nextImageTimer;
 @property (assign, nonatomic) enum JBSourceMode sourceMode;
-@property (nonatomic) int currentImage;
+@property (assign, nonatomic) BOOL rotates;
 
 @property (assign, nonatomic) BOOL startImmediatelyWithoutFadeIn;
 
@@ -85,7 +85,7 @@ enum JBSourceMode {
     [self _startAnimationsWithData:images transitionDuration:duration loop:shouldLoop isLandscape:isLandscape];
 }
 
-- (void)startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape
+- (void)startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop rotates:(BOOL)rotates isLandscape:(BOOL)isLandscape
 {
     self.sourceMode = JBSourceModeDatasource;
     self.datasource = datasource;
@@ -96,6 +96,7 @@ enum JBSourceMode {
     self.showImageDuration  = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:self.currentIndex+1];
     self.shouldLoop         = isLoop;
     self.isLandscape        = isLandscape;
+    self.rotates            = rotates;
     self.startImmediatelyWithoutFadeIn  = YES;
 
     [self nextImage];
@@ -182,20 +183,16 @@ enum JBSourceMode {
 }
 
 - (void)nextImage {
+    
     self.currentIndex++;
     
-    CGFloat imageDurationForCurrentIndex = self.showImageDuration;
-
-    NSInteger imageArrayCount = 0;
     UIImage *image = nil;
     switch (self.sourceMode) {
         case JBSourceModeImages:
-            imageArrayCount = self.imagesArray.count;
             image = self.imagesArray[self.currentIndex];
             break;
-
+            
         case JBSourceModePaths:
-            imageArrayCount = self.imagesArray.count;
             image = [UIImage imageWithContentsOfFile:self.imagesArray[self.currentIndex]];
             break;
             
@@ -203,12 +200,43 @@ enum JBSourceMode {
             
             NSAssert(self.datasource, @"Datasource for JBKenBurnsView cannot be nil");
             
-            imageArrayCount = [self.datasource numberOfImagesInKenBurnsView:self];
             image = [self.datasource kenBurnsView:self imageAtIndex:self.currentIndex];
-            imageDurationForCurrentIndex = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:self.currentIndex];
-            
             NSAssert(image, @"Image requested for JBKenBurnsView cannot be nil");
             
+            break;
+    }
+
+    CGFloat rotation = 0.0f;
+    if (self.rotates) {
+        rotation = (arc4random() % 9) / 100.0f;
+    }
+    NSInteger random = arc4random() % 4;
+
+    [self animateToImage:image rotation:rotation random:random];
+}
+
+- (void)animateToImage:(UIImage*)image rotation:(CGFloat)rotation random:(NSInteger)random {
+    
+    
+    CGFloat imageDurationForCurrentIndex = self.showImageDuration;
+
+    NSInteger imageArrayCount = 0;
+    switch (self.sourceMode) {
+        case JBSourceModeImages:
+            imageArrayCount = self.imagesArray.count;
+            break;
+
+        case JBSourceModePaths:
+            imageArrayCount = self.imagesArray.count;
+            break;
+            
+        case JBSourceModeDatasource:
+            
+            NSAssert(self.datasource, @"Datasource for JBKenBurnsView cannot be nil");
+            
+            imageArrayCount = [self.datasource numberOfImagesInKenBurnsView:self];
+            imageDurationForCurrentIndex = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:self.currentIndex];
+
             [self.nextImageTimer invalidate];
             self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:imageDurationForCurrentIndex target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
             
@@ -295,9 +323,7 @@ enum JBSourceMode {
     CGFloat maxMoveX = optimusWidth - frameWidth;
     CGFloat maxMoveY = optimusHeight - frameHeight;
     
-    CGFloat rotation = (arc4random() % 9) / 100;
-    
-    switch (arc4random() % 4) {
+    switch (random) {
         case 0:
             originX = 0;
             originY = 0;

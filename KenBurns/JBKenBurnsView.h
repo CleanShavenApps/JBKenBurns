@@ -82,12 +82,24 @@
  * @param isLoop The animation will start again when ended.
  * @param isLandscape If true optimized to show in Landscape mode.
  */
-- (void)startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop isLandscape:(BOOL)isLandscape;
+- (void)startAnimationWithDatasource:(id<JBKenBurnsViewDatasource>)datasource loop:(BOOL)isLoop rotates:(BOOL)rotates isLandscape:(BOOL)isLandscape;
 
+/**
+ * Stops animation. But animation in the same cycle continues
+ *
+ */
 - (void)stopAnimation;
 
+/**
+ * Pause animation
+ *
+ */
 - (void)pauseAnimation;
 
+/**
+ * Resumes a paused animation
+ *
+ */
 - (void)resumeAnimation;
 
 /**
