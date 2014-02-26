@@ -207,9 +207,12 @@ enum JBSourceMode {
             
         case JBSourceModeDatasource:
             
-            NSAssert(self.datasource, @"Datasource for JBKenBurnsView cannot be nil");
-            
-            if ([self.datasource respondsToSelector:@selector(kenBurnsView:imageAtIndex:)]) {
+//            NSAssert(self.datasource, @"Datasource for JBKenBurnsView cannot be nil");
+            if (!self.datasource)
+            {
+                return;
+            }
+            else if ([self.datasource respondsToSelector:@selector(kenBurnsView:imageAtIndex:)]) {
                 
                 image = [self.datasource kenBurnsView:self imageAtIndex:self.currentIndex];
                 NSAssert(image, @"Image requested for JBKenBurnsView cannot be nil");
