@@ -114,7 +114,10 @@ enum JBSourceMode {
     _paused = YES;
     
     // stop timer
-    [self stopAnimation];
+    if (self.sourceMode != JBSourceModeDatasource)
+    {
+        [self stopAnimation];
+    }
     
     // Find the current view
     if ([[self subviews] count] > 0){
@@ -166,7 +169,10 @@ enum JBSourceMode {
 
 - (void)clear {
     
-    [self stopAnimation];
+    if (self.sourceMode != JBSourceModeDatasource)
+    {
+        [self stopAnimation];
+    }
     
     // Remove the previous view
     if ([[self subviews] count] > 0){
