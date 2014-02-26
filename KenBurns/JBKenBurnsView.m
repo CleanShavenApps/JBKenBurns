@@ -175,6 +175,7 @@ enum JBSourceMode {
         oldImageView = nil;
     }
     
+    self.datasource = nil;
     self.imagesArray = nil;
     self.showImageDuration = 0;
     self.shouldLoop = NO;
@@ -183,6 +184,8 @@ enum JBSourceMode {
 }
 
 - (void)nextImage {
+    
+    BOOL isSynchronous = YES;
     
     self.currentIndex++;
     
@@ -200,18 +203,41 @@ enum JBSourceMode {
             
             NSAssert(self.datasource, @"Datasource for JBKenBurnsView cannot be nil");
             
-            image = [self.datasource kenBurnsView:self imageAtIndex:self.currentIndex];
-            NSAssert(image, @"Image requested for JBKenBurnsView cannot be nil");
-            
+            if ([self.datasource respondsToSelector:@selector(kenBurnsView:imageAtIndex:)]) {
+                
+                image = [self.datasource kenBurnsView:self imageAtIndex:self.currentIndex];
+                NSAssert(image, @"Image requested for JBKenBurnsView cannot be nil");
+            }
+            else if ([self.datasource respondsToSelector:@selector(kenBurnsView:loadImageAtIndex:completed:)]) {
+                
+                isSynchronous = NO;
+                
+                [self.datasource kenBurnsView:self loadImageAtIndex:self.currentIndex completed:^(UIImage *image) {
+                    
+                    if (image) {
+                        [self animateToImage:image];
+                    }
+                }];
+            }
+            else {
+                NSAssert(1, @"No method to request for image is supplied to datasource");
+            }
             break;
     }
+    
+    if (isSynchronous) {
+        [self animateToImage:image];
+    }
+}
 
+- (void)animateToImage:(UIImage*)image
+{
     CGFloat rotation = 0.0f;
     if (self.rotates) {
         rotation = (arc4random() % 9) / 100.0f;
     }
     NSInteger random = arc4random() % 4;
-
+    
     [self animateToImage:image rotation:rotation random:random];
 }
 
@@ -237,7 +263,6 @@ enum JBSourceMode {
             imageArrayCount = [self.datasource numberOfImagesInKenBurnsView:self];
             imageDurationForCurrentIndex = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:self.currentIndex];
 
-            [self.nextImageTimer invalidate];
             self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:imageDurationForCurrentIndex target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
             
             break;

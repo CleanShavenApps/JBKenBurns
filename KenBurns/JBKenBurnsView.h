@@ -40,14 +40,6 @@
  */
 - (NSInteger)numberOfImagesInKenBurnsView:(JBKenBurnsView*)kenBurnsView;
 
-/**
- * Asks the data source for a UIImage for display
- * in \c kenBurnsView. (required)
- *
- * @param kenBurnsView The JBKenBurnsView requesting this information
- * @param imageIndex Index of the UIImage being requested
- */
-- (UIImage*)kenBurnsView:(JBKenBurnsView*)kenBurnsView imageAtIndex:(NSInteger)imageIndex;
 
 /**
  * Asks the data source for duration to animate an image
@@ -57,6 +49,27 @@
  * @param imageIndex Index of the UIImage being requested
  */
 - (CGFloat)kenBurnsView:(JBKenBurnsView*)kenBurnsView transitionDurationForImageAtIndex:(NSInteger)imageIndex;
+
+@optional;
+
+/**
+ * Asks the data source for a UIImage for display synchronously
+ * in \c kenBurnsView. Only one of the image request method (synchronous or asynchronous) is required.
+ *
+ * @param kenBurnsView The JBKenBurnsView requesting this information
+ * @param imageIndex Index of the UIImage being requested
+ */
+- (UIImage*)kenBurnsView:(JBKenBurnsView*)kenBurnsView imageAtIndex:(NSInteger)imageIndex;
+
+/**
+ * Asks the data source for a UIImage for display asynchronously
+ * in \c kenBurnsView. Only one of the image request method (synchronous or asynchronous) is required.
+ *
+ * @param kenBurnsView The JBKenBurnsView requesting this information
+ * @param imageIndex Index of the UIImage being requested
+ * @param completed The completion block that returns the requested image
+ */
+- (void)kenBurnsView:(JBKenBurnsView*)kenBurnsView loadImageAtIndex:(NSInteger)imageIndex completed:(void(^)(UIImage *image))completed;
 
 @end
 
