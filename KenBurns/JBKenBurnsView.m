@@ -103,10 +103,18 @@ enum JBSourceMode {
 }
 
 - (void)stopAnimation {
-    if (self.nextImageTimer && [self.nextImageTimer isValid]) {
-        [self.nextImageTimer invalidate];
-        self.nextImageTimer = nil;
+    
+    if (self.sourceMode == JBSourceModeDatasource) {
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(nextImage) object:nil];
     }
+    else {
+        if (self.nextImageTimer && [self.nextImageTimer isValid]) {
+            [self.nextImageTimer invalidate];
+            self.nextImageTimer = nil;
+        }
+    }
+    
+    
 }
 
 - (void)pauseAnimation {
@@ -114,10 +122,7 @@ enum JBSourceMode {
     _paused = YES;
     
     // stop timer
-    if (self.sourceMode != JBSourceModeDatasource)
-    {
-        [self stopAnimation];
-    }
+    [self stopAnimation];
     
     // Find the current view
     if ([[self subviews] count] > 0){
@@ -149,7 +154,8 @@ enum JBSourceMode {
         // restart timer
         CGFloat durationLeft = self.showImageDuration - time_since_pause;
 
-        self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:durationLeft target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
+        [self performSelector:@selector(nextImage) withObject:nil afterDelay:durationLeft];
+//        self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:durationLeft target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
     }
 }
 
@@ -162,6 +168,8 @@ enum JBSourceMode {
 
     // start at 0
     self.currentIndex       = -1;
+    
+    [self stopAnimation];
 
     self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:duration target:self selector:@selector(nextImage) userInfo:nil repeats:YES];
     [self.nextImageTimer fire];
@@ -169,10 +177,7 @@ enum JBSourceMode {
 
 - (void)clear {
     
-    if (self.sourceMode != JBSourceModeDatasource)
-    {
-        [self stopAnimation];
-    }
+    [self stopAnimation];
     
     // Remove the previous view
     if ([[self subviews] count] > 0){
@@ -272,7 +277,8 @@ enum JBSourceMode {
             imageArrayCount = [self.datasource numberOfImagesInKenBurnsView:self];
             imageDurationForCurrentIndex = [self.datasource kenBurnsView:self transitionDurationForImageAtIndex:self.currentIndex];
 
-            self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:imageDurationForCurrentIndex target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
+            [self performSelector:@selector(nextImage) withObject:nil afterDelay:imageDurationForCurrentIndex];
+//            self.nextImageTimer = [NSTimer scheduledTimerWithTimeInterval:imageDurationForCurrentIndex target:self selector:@selector(nextImage) userInfo:nil repeats:NO];
             
             break;
     }
@@ -454,6 +460,7 @@ enum JBSourceMode {
             self.currentIndex = -1;
         }else {
             [self.nextImageTimer invalidate];
+            self.nextImageTimer = nil;
         }
     }
 }
